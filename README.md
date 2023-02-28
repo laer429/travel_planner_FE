@@ -20,9 +20,6 @@
     
 - Tools
   - vue.js
-  - node.js
-  - express
-  - mysql
 
 # front_end
 
