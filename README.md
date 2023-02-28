@@ -1,8 +1,7 @@
 # travel_planner_FE
 제주도 여행동선 확인 웹사이트
 
-<img width="833" alt="image" src="https://user-images.githubusercontent.com/105295580/221903842-1c36af31-1e12-4a57-869b-d09c0cacc0cd.png">
-
+- 검색 후 일정에 추가한 관광지간의 경로 탐색
     
 - Tools
   - vue.js
