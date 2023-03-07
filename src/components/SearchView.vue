@@ -5,7 +5,13 @@
         </form>
         <div v-for="(i,index) in data" :key="index">
             <div id="block">
-                <div><div id="title">{{ i.title }}</div><br>{{ i.address }}</div><button class="add_btn">+</button>
+                <div></div> <!-- space-between 간격을 위한 빈 div -->
+                <div>
+                    <div id="title">{{ i.title }}</div>
+                    <br>{{ i.address }}
+                </div>
+                <div v-if="!button_on"></div> 
+                <button v-if="button_on" id="add_btn">+</button>
             </div>
         </div>
     </div>
@@ -21,10 +27,17 @@
                         address:'서귀포시 성산읍'},
                         {title:'섭지코지',
                         address:'서귀포시 성산읍'}
-                    ]
+                    ],
+                button_on: true
                 
             }
-        }}
+        },
+        // created() {
+            // EventBus.$on('btn_off',(onoff)=>{
+                // this.button_on = onoff
+            // });
+        // }
+        }
 </script>
 
 <style>
@@ -38,20 +51,20 @@
 }
 
 #block {
-    width: 65%;
+    width: 95%;
     height: 80px;
     background-color: rgb(210, 210, 210);
     color: rgb(71, 71, 71);
     margin-top: 20px;
-    padding-left: 100px;
+    padding-left: 10px;
     box-shadow: 3px 3px 3px gray;
     align-items: center;
     display: flex;
     justify-content: space-between;
     border-radius: 10px/10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
-.add_btn {
+#add_btn {
     background-color: rgb(210, 210, 210);
     border-top: none;
     border-right: none;

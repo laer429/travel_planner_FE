@@ -6,6 +6,7 @@
     <div calss="item" id="plan"><PlanView></PlanView></div>
   </div>
 </template>
+
 <script>
 import SearchView from "./components/SearchView.vue";
 import PlanView from "./components/PlanView.vue";
@@ -15,7 +16,7 @@ import MapView from "./components/MapView.vue";
 
 export default {
   name: "app",
-  components: { // 가져온 component 들을 등록합니다.
+  components: {
     SearchView,
     PlanView,
     MapView
