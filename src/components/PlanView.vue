@@ -53,7 +53,7 @@ export default {
                 // EventBus.$emit('btn_off',this.button_on);
             },
             fnDirectionOff() {
-                // this.button_on = true;
+                this.button_on = true;
             },
 
         },
