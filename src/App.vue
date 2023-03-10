@@ -33,7 +33,7 @@ export default {
 #map {
   width:60%;
   height: 1000px;
-  background-color: rgb(190,182,249);
+  background-color: rgb(162,181,210);
 }
 #plan {
   width:20%;

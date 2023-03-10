@@ -1,14 +1,12 @@
 <template>
     <div class="side_block">
-        <form>
-            <input id="search_input"><input id="search_button" type="submit" value="검색">
-        </form>
-        <div v-for="(i,index) in data" :key="index">
+            <input id="search_input" v-model="keyword"> <button id="search_button" v-on:click="fnSearch()">검색</button>
+        <div v-for="(i,index) in datas" :key="index">
             <div id="block">
                 <div></div> <!-- space-between 간격을 위한 빈 div -->
                 <div>
-                    <div id="title">{{ i.title }}</div>
-                    <br>{{ i.address }}
+                    <div id="title">{{ i.place_name }}</div>
+                    <br>{{ i.address_name }}
                 </div>
                 <div v-if="!button_on"></div> 
                 <button v-if="button_on" id="add_btn">+</button>
@@ -18,20 +16,32 @@
 </template>
 
 <script>
+import axios from 'axios'
     export default {
         data() {
             return {
-                data:[  {title:'우진해장국',
-                        address:'제주시 서사로'},
-                        {title:'성산 일출봉',
-                        address:'서귀포시 성산읍'},
-                        {title:'섭지코지',
-                        address:'서귀포시 성산읍'}
-                    ],
-                button_on: true
-                
+                datas:[],
+                keyword: "",
+                button_on: true,
             }
         },
+        methods: {
+            fnSearch() {
+                let config = {
+                    method: 'get',
+                    url: 'https://dapi.kakao.com/v2/local/search/keyword?size=5&query='+this.keyword,
+                    headers: { 
+                        'Authorization': 'KakaoAK api key'
+                    }};
+                    axios(config).then((res) => {
+                    this.datas = res.data.documents;
+                }).catch((err) => {
+                    if (err.message.indexOf('Network Error') >-1) {
+                        alert('네트워크 오류');
+                    }
+                });
+            }
+        }
         // created() {
             // EventBus.$on('btn_off',(onoff)=>{
                 // this.button_on = onoff
