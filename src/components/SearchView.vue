@@ -9,7 +9,7 @@
                     <br>{{ i.address_name }}
                 </div>
                 <div v-if="!button_on"></div> 
-                <button v-if="button_on" id="add_btn">+</button>
+                <button v-if="button_on" id="add_btn" v-on:click="fnAdd(index)">+</button>
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@ import axios from 'axios'
                     method: 'get',
                     url: 'https://dapi.kakao.com/v2/local/search/keyword?size=5&query='+this.keyword,
                     headers: { 
-                        'Authorization': 'KakaoAK api key'
+                        'Authorization': 'KakaoAK 29d1b7b3d37355d593600d5bea1cb939'
                     }};
                     axios(config).then((res) => {
                     this.datas = res.data.documents;
@@ -39,6 +39,21 @@ import axios from 'axios'
                     if (err.message.indexOf('Network Error') >-1) {
                         alert('네트워크 오류');
                     }
+                });
+            },
+            fnAdd(index) {
+                this.form = {
+                            turn:index,
+                            location_name:this.datas[index].place_name,
+                            address:this.datas[index].address_name,
+                            mapx:this.datas[index].x,
+                            mapy:this.datas[index].y
+                        }
+                this.$axios.post(this.$serverUrl + 'add', this.form).then(() => {
+                    alert('장소가 일정에 추가되었습니다.');
+                    this.fnDirectionOff();
+                }).catch((err) => {
+                    console.log('err', err);
                 });
             }
         }

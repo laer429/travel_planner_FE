@@ -1,13 +1,13 @@
 <template>
     <div class="side_block">
         <h4>내 일정</h4>
-        <div v-for="(i,index) in data" :key="index">   
+        <div v-for="(i,index) in datas" :key="index">
             <div id="plan_block">
-                <div></div> <!-- space-between 간격을 위한 빈 div -->
-                <div><div id="title">{{ i.title }}</div><br>{{ i.address }}{{ i.address }}</div>
+                <button id="del_btn" v-on:click="fnDelete(i)">x</button>
+                <div><div id="title">{{ i.location_name }}</div><br>{{ i.address }}</div>
                     <div id="btn_block">
                         <div v-if="button_on" id="updown_btn_block">
-                            <button id="up_btn">▲</button><button id="down_btn">▼</button>
+                            <button id="up_btn" @click="fnUp(index)">▲</button><button id="down_btn" @click="fnDown(index)">▼</button>
                         </div>
                     </div>
             </div>
@@ -30,37 +30,116 @@
 export default {
         data() {
             return {
-                data:[  
-                    {title:'우진해장국',
-                    address:'제주시 서사로'},
-                    {title:'성산 일출봉',
-                    address:'서귀포시 성산읍'},
-                    {title:'섭지코지',
-                    address:'서귀포시 성산읍'}
-                ],
+                datas:{},
                 direciton:[
                         {time:'50분',
                         distance:'40km'},
                         {time:'30분',
                         distance:'20km'}
                 ],
-            button_on:true
+                button_on:true
             }  
         },
         methods: {
+            // 동선보기 클릭 시
             fnDirectionOn() {
                 this.button_on = false;
                 // EventBus.$emit('btn_off',this.button_on);
             },
+            // 일정보기 클릭 시
             fnDirectionOff() {
-                this.button_on = true;
+                try {
+                    this.button_on = true;
+                    this.$axios.get(this.$serverUrl)
+                    .then((res) => {
+                        this.datas = res.data;
+                    })
+                } catch(e) {
+                    this.datas = {};
+                }
             },
+            // 삭제 버튼
+            fnDelete(i) {
+                this.$axios.delete(this.$serverUrl + i.id)
+                .then(() => {
+                    this.fnDirectionOff();
+                }).catch((err)=> {
+                    if (err) {
+                        console.log('err',err);
+                    }
+                })
+            },
+            //순서 바꾸기 위쪽 방향
+            fnUp(index) {
+                if (index == 0) {
+                    console.log('변경불가')
+                } else {
+                    let fst_form = {
+                            turn:index,
+                            location_name:this.datas[index].location_name,
+                            address:this.datas[index].address,
+                            mapx:this.datas[index].mapx,
+                            mapy:this.datas[index].mpay,
+                            id:this.datas[index-1].id
+                        };
+                    let snd_form = {
+                            turn:index-1,
+                            location_name:this.datas[index-1].location_name,
+                            address:this.datas[index-1].address,
+                            mapx:this.datas[index-1].mapx,
+                            mapy:this.datas[index-1].mpay,
+                            id:this.datas[index].id
+                        };
+                    this.$axios.put(this.$serverUrl,fst_form)
+                    .then(() => {
+                    }).catch((err) => {
+                        console.log('err',err);
+                    });
+                    this.$axios.put(this.$serverUrl,snd_form)
+                    .then(() => {
+                        this.fnDirectionOff();
+                    }).catch((err) => {
+                        console.log('err', err);
+                    });
+                }
+                
 
-        },
-        mounted() {
-            // this.fnDirectionOff()
-        }
-        }
+            },
+            // 순서 바꾸기 아래쪽 방향
+            fnDown(index) {
+                if (index == this.datas.length-1) {
+                    console.log('변경불가')
+                } else {
+                    let fst_form = {
+                            turn:index,
+                            location_name:this.datas[index].location_name,
+                            address:this.datas[index].address,
+                            mapx:this.datas[index].mapx,
+                            mapy:this.datas[index].mpay,
+                            id:this.datas[index+1].id
+                        };
+                    let snd_form = {
+                            turn:index+1,
+                            location_name:this.datas[index+1].location_name,
+                            address:this.datas[index+1].address,
+                            mapx:this.datas[index+1].mapx,
+                            mapy:this.datas[index+1].mpay,
+                            id:this.datas[index].id
+                        };
+                    this.$axios.put(this.$serverUrl,fst_form)
+                    .then(() => {
+                    }).catch((err) => {
+                        console.log('err',err);
+                    });
+                    this.$axios.put(this.$serverUrl,snd_form)
+                    .then(() => {
+                        this.fnDirectionOff();
+                    }).catch((err) => {
+                        console.log('err', err);
+                    });
+                }
+            }
+}}
 </script>
 
 <style>
@@ -122,7 +201,18 @@ export default {
     border-radius: 0px 0px 10px 0px;
 }
 
-#up_btn:hover, #down_btn:hover, #navi_btn:hover {
+#del_btn {
+    background-color: rgb(210, 210, 210);
+    margin-top: 15px;
+    margin-bottom: 60px;
+    border-bottom: none;
+    border-right: none;
+    border-top: none;
+    border-left: none;
+    border-radius: 10px 10px 10px 10px;
+}
+
+#up_btn:hover, #down_btn:hover, #navi_btn:hover, #del_btn:hover {
     cursor: pointer;
 }
 
