@@ -12,7 +12,7 @@
         methods: {
             loadScript() {
                 const script = document.createElement("script");
-                script.src = "//dapi.kakao.com/v2/maps/sdk.js?appkey=16685f485eb191da4f9f06ef4c319e45&autoload=false"; //api를 로드한 후 맵을 그리는 함수가 실행되도록 구현
+                script.src = "//dapi.kakao.com/v2/maps/sdk.js?appkey=appkey=false"; //api를 로드한 후 맵을 그리는 함수가 실행되도록 구현
                 script.onload = () => window.kakao.maps.load(this.loadMap); //스크립트 로드가 끝나고 지도를 실행될 준비가 되어있다면 지도가 실행
                 document.head.appendChild(script); //html/head 안에 스크립트 소스를 추가
             },
