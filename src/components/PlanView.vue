@@ -3,7 +3,7 @@
         <h4>내 일정</h4>
         <div v-for="(i,index) in datas" :key="index">
             <div id="plan_block">
-                <button id="del_btn" v-on:click="fnDelete(i)">x</button>
+                <button v-if="button_on" id="del_btn" v-on:click="fnDelete(i)">x</button>
                 <div><div id="title">{{ i.location_name }}</div><br>{{ i.address }}</div>
                     <div id="btn_block">
                         <div v-if="button_on" id="updown_btn_block">
@@ -12,39 +12,70 @@
                     </div>
             </div>
             <div v-if="!button_on">
-                <div v-if="index < data.length-1" id="direction_block">
-                    <div>▼<br>▼<br>▼</div><div>&nbsp;&nbsp;&nbsp;&nbsp;소요시간: {{ direciton[index].time }}<br>거리: {{ direciton[index].distance }}</div>
+                <div v-if="index < datas.length-1" id="direction_block">
+                    <div>▼<br>▼<br>▼</div><div>&nbsp;&nbsp;&nbsp;&nbsp;소요시간:{{ (direciton.routes[0].sections[index].duration/60)|int }}분<br>거리: {{ (direciton.routes[0].sections[index].distance/1000)|int }}km</div>
                 </div>
                 <div v-else></div>
             </div>
+            
         </div>
         <div id="navi_btn_block">
-            <button id="navi_btn" @click="fnDirectionOff">일정 보기</button><button id="navi_btn" @click="fnDirectionOn">동선 보기</button>
+            <button id="navi_btn" @click="fnDirectionOff()">일정 보기</button><button id="navi_btn" @click="fnDirectionOn()">동선 보기</button>
         </div>
     </div>
 </template>
 
 <script>
 // import EventBus from '../EventBus'
-
+import axios from 'axios'
 export default {
         data() {
             return {
                 datas:{},
-                direciton:[
-                        {time:'50분',
-                        distance:'40km'},
-                        {time:'30분',
-                        distance:'20km'}
-                ],
+                direciton:{},
                 button_on:true
             }  
         },
         methods: {
             // 동선보기 클릭 시
             fnDirectionOn() {
-                this.button_on = false;
+                //params 변수
+                let origin = this.datas[0].mapx + ','+this.datas[0].mpay + ',name=' + this.datas[0].location_name;
+                let waypoints = '';
+                for ( let i = 1 ; i < this.datas.length-1 ; i++) {
+                    if ( i != this.datas.length-2){ // | 로 연결해야 해서 푸쉬할때 |추가하고 마지막순서만 |안넣기
+                        waypoints = waypoints + this.datas[i].mapx + ',' + this.datas[i].mpay + ',name=' + this.datas[i].location_name + '|' ;
+                    } else {
+                        waypoints = waypoints + this.datas[i].mapx + ',' + this.datas[i].mpay + ',name=' + this.datas[i].location_name;
+                    }    
+                }
+
+                let destination = this.datas[this.datas.length-1].mapx + ',' + this.datas[this.datas.length-1].mpay + ',name=' + this.datas[this.datas.length-1].location_name;
+
+                let config = {
+                method: 'get',
+                url: 'https://apis-navi.kakaomobility.com/v1/directions',
+                params: {
+                    origin : origin,
+                    destination : destination,
+                    waypoints : waypoints
+                },
+                headers: { 
+                    'Authorization': 'KakaoAK api-key'
+                }
+                };
+                axios(config)
+                .then((res) => {
+                    this.direciton = res.data;
+                    console.log(this.direciton);
+                    this.button_on = false;
+                })
+                .catch((error) => {
+                    this.direciton = {};
+                    console.log(error);
+                });
                 // EventBus.$emit('btn_off',this.button_on);
+                
             },
             // 일정보기 클릭 시
             fnDirectionOff() {
