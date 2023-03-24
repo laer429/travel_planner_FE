@@ -13,6 +13,7 @@ import PlanView from "./components/PlanView.vue";
 import MapView from "./components/MapView.vue";
 
 
+// import axios from 'axios'
 
 export default {
   name: "app",

@@ -3,8 +3,11 @@
         <h4>내 일정</h4>
         <div v-for="(i,index) in datas" :key="index">
             <div id="plan_block">
-                <button v-if="button_on" id="del_btn" v-on:click="fnDelete(i)">x</button>
-                <div><div id="title">{{ i.location_name }}</div><br>{{ i.address }}</div>
+                <div id = "x_index_btn">
+                    <button v-if="button_on" id="del_btn" v-on:click="fnDelete(i)">x</button>
+                    <div id="index"></div>
+                </div>
+                <div><div id="title">{{ index+1 }}.{{ i.location_name }}</div><br>{{ i.address }}</div>
                     <div id="btn_block">
                         <div v-if="button_on" id="updown_btn_block">
                             <button id="up_btn" @click="fnUp(index)">▲</button><button id="down_btn" @click="fnDown(index)">▼</button>
@@ -26,20 +29,30 @@
 </template>
 
 <script>
-// import EventBus from '../EventBus'
+
 import axios from 'axios'
+
 export default {
+        created() {
+            axios.get('http://127.0.0.1:3000/')
+            .then((res) => {
+                this.datas = res.data;
+                console.log(res);
+            }).catch((error) => {
+                console.log(error);
+            })
+        },
         data() {
             return {
                 datas:{},
                 direciton:{},
                 button_on:true
-            }  
+            }
         },
         methods: {
             // 동선보기 클릭 시
             fnDirectionOn() {
-                //params 변수
+                //params 변수 (출발지, 경유지, 도착지)
                 let origin = this.datas[0].mapx + ','+this.datas[0].mpay + ',name=' + this.datas[0].location_name;
                 let waypoints = '';
                 for ( let i = 1 ; i < this.datas.length-1 ; i++) {
@@ -61,7 +74,7 @@ export default {
                     waypoints : waypoints
                 },
                 headers: { 
-                    'Authorization': 'KakaoAK api-key'
+                    'Authorization': import.meta.env.VITE_JAVASCRIPT_KEY
                 }
                 };
                 axios(config)
@@ -69,18 +82,20 @@ export default {
                     this.direciton = res.data;
                     console.log(this.direciton);
                     this.button_on = false;
+                    this.fnBtnoff();
                 })
                 .catch((error) => {
                     this.direciton = {};
                     console.log(error);
                 });
-                // EventBus.$emit('btn_off',this.button_on);
+
                 
             },
             // 일정보기 클릭 시
             fnDirectionOff() {
                 try {
                     this.button_on = true;
+                    this.fnBtnon();
                     this.$axios.get(this.$serverUrl)
                     .then((res) => {
                         this.datas = res.data;
@@ -169,15 +184,32 @@ export default {
                         console.log('err', err);
                     });
                 }
+            },
+            //일정보기 클릭시 mitt
+            fnBtnon() {
+                this.emitter.emit('btnOn',this.button_on); // 일정보기 클릭시 SearchView의 일정추가 버튼을 없애기 위해 (v-if (button_on=ture)) button_on의 데이터를 넘겨준다. 
+                this.emitter.emit('marker',this.datas); // 지도마커 생성을 위해 필요한 일정data의 주소,x,y좌표를 보내기 위해 datas 전송
+            },
+            //동선보기 클릭시 mitt
+            fnBtnoff() {
+                this.emitter.emit('btnOff',this.button_on); //동선보기 클릭시 SearchView의 일정추가 버튼을 없애기 위해 (v-if (button_on=ture)) button_on의 데이터를 넘겨준다.
+                this.emitter.emit('marker',this.datas); // 지도마커 생성을 위해 필요한 일정data의 주소,x,y좌표를 보내기 위해 datas 전송
+
             }
-}}
+        },
+        Created() {
+            this.fnDirectionOff();
+
+
+        }
+    }
 </script>
 
 <style>
 
 #plan_block {
     width: 92%;
-    height: 80px;
+    height: 100%;
     background-color: rgb(210, 210, 210);
     color: rgb(71, 71, 71);
     margin-top: 20px;
@@ -209,9 +241,14 @@ export default {
     flex-direction: column;
 }
 
+#x_index_btn {
+    display: flex;
+    flex-direction: column;
+}
 
 #up_btn {
     background-color: rgb(210, 210, 210);
+    height: 50px;
     padding-top: 12px;
     padding-bottom: 10px;
     border-bottom: none;
@@ -222,6 +259,7 @@ export default {
 }
 
 #down_btn {
+    height: 50px;
     background-color: rgb(210, 210, 210);
     padding-top: 10px;
     padding-bottom: 12px;
@@ -233,6 +271,7 @@ export default {
 }
 
 #del_btn {
+    height: 10px;
     background-color: rgb(210, 210, 210);
     margin-top: 15px;
     margin-bottom: 60px;

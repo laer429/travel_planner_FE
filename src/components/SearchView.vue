@@ -10,6 +10,7 @@
                 </div>
                 <div v-if="!button_on"></div> 
                 <button v-if="button_on" id="add_btn" v-on:click="fnAdd(index)">+</button>
+                <div v-else id="btnoff"></div> <!-- 버튼 없어졌을때 박스 크기가 너무 작아지는 것을 방지 -->
             </div>
         </div>
     </div>
@@ -31,7 +32,7 @@ import axios from 'axios'
                     method: 'get',
                     url: 'https://dapi.kakao.com/v2/local/search/keyword?size=5&query='+this.keyword,
                     headers: { 
-                        'Authorization': 'KakaoAK 29d1b7b3d37355d593600d5bea1cb939'
+                        'Authorization': import.meta.env.VITE_JAVASCRIPT_KEY
                     }};
                     axios(config).then((res) => {
                     this.datas = res.data.documents;
@@ -51,17 +52,21 @@ import axios from 'axios'
                         }
                 this.$axios.post(this.$serverUrl + 'add', this.form).then(() => {
                     alert('장소가 일정에 추가되었습니다.');
-                    this.fnDirectionOff();
+                    this.$router.go(this.$router.currentRoute);
                 }).catch((err) => {
                     console.log('err', err);
                 });
             }
+        },
+        mounted() {
+            this.emitter.on('btnOn', (a) => {
+                this.button_on = a;
+            }),
+            this.emitter.on('btnOff', (a) => {
+                this.button_on = a;
+            })
         }
-        // created() {
-            // EventBus.$on('btn_off',(onoff)=>{
-                // this.button_on = onoff
-            // });
-        // }
+
         }
 </script>
 
@@ -77,7 +82,7 @@ import axios from 'axios'
 
 #block {
     width: 95%;
-    height: 80px;
+    height: 100%;
     background-color: rgb(210, 210, 210);
     color: rgb(71, 71, 71);
     margin-top: 20px;
@@ -90,6 +95,7 @@ import axios from 'axios'
     flex-wrap: nowrap;
 }
 #add_btn {
+    height: 100px;
     background-color: rgb(210, 210, 210);
     border-top: none;
     border-right: none;
@@ -102,6 +108,10 @@ import axios from 'axios'
 }
 #add_btn:hover,#search_button:hover {
     cursor: pointer;
+}
+
+#btnoff {
+    height: 100px;
 }
 
 #title {
