@@ -7,7 +7,7 @@
                     <button v-if="button_on" id="del_btn" v-on:click="fnDelete(i)">x</button>
                     <div id="index"></div>
                 </div>
-                <div><div id="title">{{ index+1 }}.{{ i.location_name }}</div><br>{{ i.address }}</div>
+                <div><div id="title">{{ index+1 }}.&nbsp;{{ i.location_name }}</div><br>{{ i.address }}</div>
                     <div id="btn_block">
                         <div v-if="button_on" id="updown_btn_block">
                             <button id="up_btn" @click="fnUp(index)">▲</button><button id="down_btn" @click="fnDown(index)">▼</button>
@@ -33,11 +33,10 @@
 import axios from 'axios'
 
 export default {
-        created() {
-            axios.get('http://127.0.0.1:3000/')
+        mounted() {
+            axios.get('http://127.0.0.1:3000/location')
             .then((res) => {
                 this.datas = res.data;
-                console.log(res);
             }).catch((error) => {
                 console.log(error);
             })
@@ -53,17 +52,17 @@ export default {
             // 동선보기 클릭 시
             fnDirectionOn() {
                 //params 변수 (출발지, 경유지, 도착지)
-                let origin = this.datas[0].mapx + ','+this.datas[0].mpay + ',name=' + this.datas[0].location_name;
+                let origin = this.datas[0].mapx + ','+this.datas[0].mapy + ',name=' + this.datas[0].location_name;
                 let waypoints = '';
                 for ( let i = 1 ; i < this.datas.length-1 ; i++) {
                     if ( i != this.datas.length-2){ // | 로 연결해야 해서 푸쉬할때 |추가하고 마지막순서만 |안넣기
-                        waypoints = waypoints + this.datas[i].mapx + ',' + this.datas[i].mpay + ',name=' + this.datas[i].location_name + '|' ;
+                        waypoints = waypoints + this.datas[i].mapx + ',' + this.datas[i].mapy + ',name=' + this.datas[i].location_name + '|' ;
                     } else {
-                        waypoints = waypoints + this.datas[i].mapx + ',' + this.datas[i].mpay + ',name=' + this.datas[i].location_name;
+                        waypoints = waypoints + this.datas[i].mapx + ',' + this.datas[i].mapy + ',name=' + this.datas[i].location_name;
                     }    
                 }
 
-                let destination = this.datas[this.datas.length-1].mapx + ',' + this.datas[this.datas.length-1].mpay + ',name=' + this.datas[this.datas.length-1].location_name;
+                let destination = this.datas[this.datas.length-1].mapx + ',' + this.datas[this.datas.length-1].mapy + ',name=' + this.datas[this.datas.length-1].location_name;
 
                 let config = {
                 method: 'get',
@@ -80,17 +79,17 @@ export default {
                 axios(config)
                 .then((res) => {
                     this.direciton = res.data;
-                    console.log(this.direciton);
                     this.button_on = false;
                     this.fnBtnoff();
                 })
                 .catch((error) => {
                     this.direciton = {};
-                    console.log(error);
+                    console.log('test',error);
                 });
 
                 
             },
+
             // 일정보기 클릭 시
             fnDirectionOff() {
                 try {
@@ -104,84 +103,67 @@ export default {
                     this.datas = {};
                 }
             },
+
             // 삭제 버튼
             fnDelete(i) {
                 this.$axios.delete(this.$serverUrl + i.id)
                 .then(() => {
-                    this.fnDirectionOff();
+                    this.$router.go(this.$router.currentRoute);
                 }).catch((err)=> {
                     if (err) {
                         console.log('err',err);
                     }
                 })
             },
+
             //순서 바꾸기 위쪽 방향
             fnUp(index) {
                 if (index == 0) {
                     console.log('변경불가')
                 } else {
-                    let fst_form = {
-                            turn:index,
-                            location_name:this.datas[index].location_name,
-                            address:this.datas[index].address,
-                            mapx:this.datas[index].mapx,
-                            mapy:this.datas[index].mpay,
-                            id:this.datas[index-1].id
+                    let form = {
+                            fst_turn:this.datas[index].turn,
+                            fst_id:this.datas[index-1].id,
+                            snd_turn:this.datas[index-1].turn,
+                            snd_id:this.datas[index].id
                         };
-                    let snd_form = {
-                            turn:index-1,
-                            location_name:this.datas[index-1].location_name,
-                            address:this.datas[index-1].address,
-                            mapx:this.datas[index-1].mapx,
-                            mapy:this.datas[index-1].mpay,
-                            id:this.datas[index].id
-                        };
-                    this.$axios.put(this.$serverUrl,fst_form)
+                    this.$axios.put(this.$serverUrl,form)
                     .then(() => {
+                        axios.get(this.$serverUrl)
+                        .then((res) => {
+                            this.datas = res.data;
+                            this.emitter.emit('marker',this.datas);
+                        }).catch((error) => {
+                            console.log(error);
+                        })
                     }).catch((err) => {
                         console.log('err',err);
                     });
-                    this.$axios.put(this.$serverUrl,snd_form)
-                    .then(() => {
-                        this.fnDirectionOff();
-                    }).catch((err) => {
-                        console.log('err', err);
-                    });
                 }
-                
-
             },
+
             // 순서 바꾸기 아래쪽 방향
             fnDown(index) {
                 if (index == this.datas.length-1) {
                     console.log('변경불가')
                 } else {
-                    let fst_form = {
-                            turn:index,
-                            location_name:this.datas[index].location_name,
-                            address:this.datas[index].address,
-                            mapx:this.datas[index].mapx,
-                            mapy:this.datas[index].mpay,
-                            id:this.datas[index+1].id
+                    let form = {
+                            fst_turn:this.datas[index].turn,
+                            fst_id:this.datas[index+1].id,
+                            snd_turn:this.datas[index+1].turn,
+                            snd_id:this.datas[index].id
                         };
-                    let snd_form = {
-                            turn:index+1,
-                            location_name:this.datas[index+1].location_name,
-                            address:this.datas[index+1].address,
-                            mapx:this.datas[index+1].mapx,
-                            mapy:this.datas[index+1].mpay,
-                            id:this.datas[index].id
-                        };
-                    this.$axios.put(this.$serverUrl,fst_form)
+                    this.$axios.put(this.$serverUrl,form)
                     .then(() => {
+                        axios.get(this.$serverUrl)
+                        .then((res) => {
+                            this.datas = res.data;
+                            this.emitter.emit('marker',this.datas);
+                        }).catch((error) => {
+                            console.log(error);
+                        });
                     }).catch((err) => {
-                        console.log('err',err);
-                    });
-                    this.$axios.put(this.$serverUrl,snd_form)
-                    .then(() => {
-                        this.fnDirectionOff();
-                    }).catch((err) => {
-                        console.log('err', err);
+                        console.log('err',err); 
                     });
                 }
             },
@@ -196,12 +178,8 @@ export default {
                 this.emitter.emit('marker',this.datas); // 지도마커 생성을 위해 필요한 일정data의 주소,x,y좌표를 보내기 위해 datas 전송
 
             }
-        },
-        Created() {
-            this.fnDirectionOff();
-
-
         }
+
     }
 </script>
 

@@ -24,6 +24,7 @@ import axios from 'axios'
                 datas:[],
                 keyword: "",
                 button_on: true,
+                current_datas:[]
             }
         },
         methods: {
@@ -43,19 +44,37 @@ import axios from 'axios'
                 });
             },
             fnAdd(index) {
-                this.form = {
-                            turn:index,
+                axios.get('http://127.0.0.1:3000/location')
+                .then((res) => {
+                    this.current_datas = res.data;
+                    if (this.current_datas.length > 0) {
+                        this.form = {
+                            turn:this.current_datas[this.current_datas.length-1].turn + 1,
                             location_name:this.datas[index].place_name,
                             address:this.datas[index].address_name,
                             mapx:this.datas[index].x,
                             mapy:this.datas[index].y
                         }
-                this.$axios.post(this.$serverUrl + 'add', this.form).then(() => {
-                    alert('장소가 일정에 추가되었습니다.');
-                    this.$router.go(this.$router.currentRoute);
-                }).catch((err) => {
-                    console.log('err', err);
-                });
+                    } else {
+                        this.form = {
+                            turn:0,
+                            location_name:this.datas[index].place_name,
+                            address:this.datas[index].address_name,
+                            mapx:this.datas[index].x,
+                            mapy:this.datas[index].y
+                        }
+                    }
+                    
+                    this.$axios.post(this.$serverUrl, this.form).then(() => {
+                        alert('장소가 일정에 추가되었습니다.');
+                        this.$router.go(this.$router.currentRoute);
+                    }).catch((err) => {
+                        console.log('err', err);
+                    });
+                }).catch((error) => {
+                    console.log(error);
+                })
+                
             }
         },
         mounted() {
@@ -118,14 +137,4 @@ import axios from 'axios'
     font-weight: bold;
 }
 
-/* #button {
-    background: url(../assets/base_img/button_img.png);
-    background-position:  0px 0px;
-    background-repeat: no-repeat;
-    width: 30px;
-    height: 22px;
-    border: 0px;
-    cursor:pointer;
-    outline: 0;
-} */
 </style>

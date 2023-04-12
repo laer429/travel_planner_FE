@@ -11,7 +11,7 @@ app.use(router)
 
 
 app.config.globalProperties.$axios = axios;
-app.config.globalProperties.$serverUrl = 'http://127.0.0.1:3000/' //api server
+app.config.globalProperties.$serverUrl = 'http://127.0.0.1:3000/location' //api server
 app.config.globalProperties.emitter = emitter;
 
 app.mount('#app')

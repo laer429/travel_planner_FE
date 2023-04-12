@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 
     export default {
         data() {
@@ -31,7 +32,7 @@
                 let latlngs = []; //마커의 좌표
                 for (let i = 0 ; i < this.data.length ; i++) {
                     let title = this.data[i].location_name;
-                    let latlng = [this.data[i].mpay,this.data[i].mapx];
+                    let latlng = [this.data[i].mapy,this.data[i].mapx];
                     titles.push(title);
                     latlngs.push(latlng);
                 }
@@ -56,7 +57,7 @@
                     // 마커 이미지를 생성
                     var markerImage = new window.kakao.maps.MarkerImage(imageSrc[i], imageSize); 
                     
-                    // 마커를 생성합니다
+                    // 마커를 생성
                     var marker = new window.kakao.maps.Marker({
                         map: this.map, // 마커를 표시할 지도
                         position: new window.kakao.maps.LatLng(latlngs[i][0],latlngs[i][1]),
@@ -69,15 +70,23 @@
             
         },
         mounted() {
+            axios.get('http://127.0.0.1:3000/location')
+            .then((res) => {
+                this.data = res.data;
+                // this.loadMap();
+                if (window.kakao && window.kakao.maps) {
+                    this.loadMap();
+                } else {
+                    this.loadScript();
+                }
+            }).catch((error) => {
+                console.log(error);
+            })
             this.emitter.on('marker', (a) =>{
                 this.data = a;
                 this.loadMap();
             })
-            if (window.kakao && window.kakao.maps) {
-                this.loadMap();
-            } else {
-                this.loadScript();
-            }
+            
         },
 
     };
