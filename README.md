@@ -1,4 +1,4 @@
-# travel_planner_FE
+# travel_planner_FE (Backend_link : https://github.com/laer429/travel_planner_BE)
 제주도 여행동선 확인 웹사이트
 
 제주도 여행동선 확인 웹사이트
